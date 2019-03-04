@@ -1,0 +1,11 @@
+{
+	"name": "cc-export",
+	"url" : "https://github.com/MatthijsKamstra",
+	"license": "MIT",
+	"tags": ["haxe", "generate", "projectTarget"],
+	"description": "Describe project Example Node.js by Matthijs Kamstra aka [mck]",
+	"version": "0.0.1",
+	"classPath": "src",
+	"releasenote": "",
+	"contributors": ["MatthijsKamstra"]
+}

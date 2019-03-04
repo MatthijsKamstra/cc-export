@@ -1,0 +1,19 @@
+# Clean up
+# -cmd echo '\n----- Cleaning -----'
+# -cmd rm -rf bin_test
+# -cmd rm -rf bin_release
+
+# Uncomment (#) more build scripts if you need more
+-cmd echo '\n----- build all (projectname: cc-export) -----'
+-cmd echo '> build target javascript (build_client.hxml)'
+-cmd haxe build_client.hxml
+
+# Add an other target (for example node.js)
+-cmd echo '> build target js (build_server.hxml)'
+-cmd haxe build_server.hxml
+
+# Create a release and/or debug build
+#-cmd echo '> build target node (build_release.hxml)'
+#-cmd haxe build_release.hxml --no-traces
+#-cmd echo '> build target node (build_debug.hxml)'
+#-cmd haxe build_debug.hxml

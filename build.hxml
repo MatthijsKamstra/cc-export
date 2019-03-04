@@ -1,0 +1,21 @@
+# Libraries you like to use (http://lib.haxe.org/)
+# node.js
+-lib js-kit
+-lib hxnodejs
+# js
+# -lib hxquicksettings
+# -lib thx.color
+# -lib hxColorToolkit
+# -lib msignal
+# -lib mloader
+# -lib uglifyjs
+-cp src
+-main MainClient
+# Node.js target
+-js bin/example_node_js.js
+-D source-map-content
+-D state=debug
+-debug
+# -dce full
+# -dce no
+
