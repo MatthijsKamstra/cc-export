@@ -49,21 +49,6 @@ class CC100 extends SketchBase {
 		drawShape();
 	}
 
-	// function createQuickSettings() {
-	// 	// demo/basic example
-	// 	panel1 = QuickSettings.create(10, 10, "Settings")
-	// 		.setGlobalChangeHandler(untyped drawShape)
-
-	// 		.addHTML("Reason", "Sometimes I need to find the best settings")
-
-	// 		.addTextArea('Quote', 'text', function(value) trace(value))
-	// 		.addBoolean('All Caps', false, function(value) trace(value))
-
-	// 		.setKey('h') // use `h` to toggle menu
-
-	// 		.saveInLocalStorage('store-data-${toString()}');
-	// }
-
 	function createShape(i:Int, ?point:Point) {
 		var shape:Circle = {
 			_id: '$i',
@@ -90,7 +75,7 @@ class CC100 extends SketchBase {
 
 	function drawShape() {
 		ctx.clearRect(0, 0, w, h);
-		ctx.backgroundObj(WHITE);
+		ctx.backgroundObj(_color0);
 
 		if (isDebug) {
 			ShapeUtil.gridField(ctx, grid);
@@ -104,7 +89,7 @@ class CC100 extends SketchBase {
 		// ctx.xcross(w/2, h/2, 200);
 
 		ctx.fillStyle = getColourObj(_color4);
-		FontUtil.centerFillText(ctx, 'text', w / 2, h / 2, "'Oswald', sans-serif;", 160);
+		FontUtil.centerFillText(ctx, '${toString()}', w / 2, h / 2, "'Oswald', sans-serif;", 260);
 
 		ctx.strokeColourRGB(_color3);
 		ctx.strokeWeight(2);

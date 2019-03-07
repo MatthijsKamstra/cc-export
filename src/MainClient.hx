@@ -16,38 +16,19 @@ class MainClient {
 	var _socket:Dynamic;
 	var panel1:QuickSettings;
 	var frameCounter = 0;
+	var _isRecording : Bool = false;
 
 	public function new() {
 		console.log('CLIENT/START :: ${App.NAME} :: build: ${App.BUILD} ');
 		document.addEventListener("DOMContentLoaded", function(event) {
 			console.log('Dom ready');
 			initSocket();
-			createCanvas();
-			createQuickSettings();
+			initCanvas();
+			initQuickSettings();
 		});
 	}
 
-	function createQuickSettings() {
-		// demo/basic example
-		panel1 = QuickSettings.create(10, 10, "cc-export")
-			// .setGlobalChangeHandler(untyped drawShape)
-
-			// .addHTML("Reason", "Sometimes I need to find the best settings")
-
-			// .addTextArea('Quote', 'text', function(value) trace(value))
-			// .addBoolean('All Caps', false, function(value) trace(value))
-
-			.addButton('Send TEST', function (e) sendTest() )
-			.addButton('Send RENDER_FRAME', function (e) renderFrameHandler() )
-			.addButton('IMAGE', function (e) renderImage() )
-			.addButton('IMAGE - PNG', function (e) renderImage(DataType.PNG) )
-			.addButton('IMAGE - JPEG', function (e) renderImage(DataType.JPEG) )
-			.addButton('IMAGE _ WEBP', function (e) renderImage(DataType.WEBP) )
-
-			.setKey('h') // use `h` to toggle menu
-
-			.saveInLocalStorage('store-data-cc-export');
-	}
+	// ____________________________________ init  ____________________________________
 
 	function initSocket():Void {
 		_socket = js.browser.SocketIo.connect('http://localhost:${App.PORT}');
@@ -60,21 +41,105 @@ class MainClient {
 		});
 	}
 
-	function createCanvas(){
+	function initCanvas(){
 		var cc = new CC100();
-		_socket.emit('send',{
+		_socket.emit(SEND,{
 			id: 'foo',
 			file: 'x'
 		});
 	}
+	function initQuickSettings() {
+		// demo/basic example
+		panel1 = QuickSettings.create(10, 10, "cc-export")
+			// .setGlobalChangeHandler(untyped drawShape)
 
-	function sendTest(){
+			.addButton('Send TEST', function (e) sendMessage() )
+			.addButton('Send RENDER_FRAME', function (e) renderFrameHandler() )
+			.addButton('IMAGE', function (e) renderImage() )
+			.addButton('IMAGE - PNG', function (e) renderImage(DataType.PNG) )
+			.addButton('IMAGE - JPEG', function (e) renderImage(DataType.JPEG) )
+			.addButton('IMAGE _ WEBP', function (e) renderImage(DataType.WEBP) )
+
+			.addBoolean('Recording', false, function (e) toggleRecording(e))
+
+			.addButton('convert', function (e) convertRecording(e) )
+			.addButton('markdown', function (e) writeReadme(e) )
+
+			.setKey('h') // use `h` to toggle menu
+
+			.saveInLocalStorage('store-data-cc-export');
+	}
+
+	// ____________________________________ set settings vars ____________________________________
+
+	function sendMessage(){
 		var data : AST.Message = {
 			_id : 'id-message',
-			message: "mijn boodschape"
+			message: "mijn boodschap"
 		}
-		trace('TEST : $data');
-		_socket.emit(TEST, data);
+		trace('MESSAGE : $data');
+		_socket.emit(MESSAGE, data);
+	}
+
+	// ____________________________________ render image/video ____________________________________
+
+	function getId():String{
+		var id = Std.string(Date.now().getTime());
+		return id;
+	}
+
+
+	function toggleRecording (isRecording:Bool)  {
+		trace('toggleRecording: $isRecording');
+		_isRecording = isRecording;
+		if(_isRecording){
+			frameCounter = 0;
+			window.requestAnimationFrame(renderSequence);
+		}
+	}
+
+	function convertRecording (e)  {
+		trace(e);
+		var data : AST.ConvertVideo = {
+			_id: getId(),
+			name: 'frame-${Std.string(frameCounter).lpad('0',4)}',
+			folder: 'sequence',
+		};
+		_socket.emit(COMBINE, data);
+	}
+
+	// ____________________________________ markdown ____________________________________
+
+	function writeReadme (e)  {
+		var data : AST.MarkDown = {
+			name: 'readme.md',
+			content: 'test me',
+			folder:'output',
+			exportFolder: 'export'
+		}
+		_socket.emit(MARKDOWN, data);
+	}
+
+	// ____________________________________ RENDERS ____________________________________
+
+	function renderSequence (?timestamp:Float){
+		var canvas : js.html.CanvasElement = cast document.getElementById('creative_code_mck');
+		var dataString = canvas.toDataURL(); // default png
+		var id = Std.string(Date.now().getTime());
+		var data : AST.IMAGE = {
+			_id : id,
+			file: dataString,
+			// name: 'frame-${id.lpad('0',4)}',
+			name: 'frame-${Std.string(frameCounter).lpad('0',4)}',
+			folder: 'sequence',
+		}
+		trace('renderSequence : ${data._id}');
+		_socket.emit(SEQUENCE, data);
+
+		frameCounter++;
+		if(_isRecording){
+			window.requestAnimationFrame(renderSequence);
+		}
 	}
 
 	/**
@@ -94,7 +159,7 @@ class MainClient {
 			name: 'name-${id.lpad('0',4)}',
 			// name: 'name-${Std.string(frameCounter).lpad('0',4)}',
 			folder: 'img',
-			defaultFolder: 'export',
+			exportFolder: 'export',
 		}
 		trace('renderImage : ${data._type}');
 		_socket.emit(IMAGE, data);
@@ -114,10 +179,6 @@ class MainClient {
 		}
 		trace('renderFrameHandler : ${data.name}');
 		_socket.emit(RENDER_FRAME, data);
-	}
-
-	function sendMessage():Void {
-		_socket.emit('send', {message: 'text', username: '_inputName.value'});
 	}
 
 	static public function main() {
