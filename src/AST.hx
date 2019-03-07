@@ -23,7 +23,25 @@ typedef RENDER_FRAME = {
 typedef IMAGE = {
 	> Base,
 	var file:String;
-	@:optional var name:String;
+	var name:String;
+	var folder:String;
+	@:optional var exportFolder:String;
+	// @:optional var name:String;
+	// @:optional var folder:String;
+	// @:optional var exportFolder:String;
+};
+
+typedef MarkDown = {
+	> Base,
+	var name:String;
+	var content:String;
 	@:optional var folder:String;
-	@:optional var defaultFolder:String;
+	@:optional var exportFolder:String;
+};
+
+typedef ConvertVideo = {
+	> Base,
+	var name:String;
+	var folder:String;
+	@:optional var exportFolder:String;
 };
