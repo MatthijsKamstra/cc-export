@@ -31,10 +31,10 @@ class MainServer {
 	var config:Config = new Config();
 
 	public function new() {
-		console.log('SERVER/START :: ${App.NAME} :: build: ${App.BUILD} ');
+		console.log('${toString()}/START :: ${App.NAME} :: build: ${App.BUILD} ');
 
 		var port = config.PORT;
-		// trace('port: $port');
+		// trace('${toString()} : port: $port');
 
 		app = new js.npm.Express();
 		server = js.node.Http.createServer(cast app);
@@ -61,54 +61,117 @@ class MainServer {
 		app.get('/', function(req:Request, res:Response) {
 			res.sendFile(Node.__dirname + '/public/index.html');
 		});
+		app.get('/test', function(req:Request, res:Response) {
+			res.sendFile(Node.__dirname + '/public/index.html');
+		});
 
 		io.on('connection', function(socket) {
-			socket.emit('message', {message: 'Welcome from the Node.js server'});
+			socket.emit(MESSAGE, {message: 'Welcome from the Export Node.js server'});
 
 			socket.on(MESSAGE, function(d:Dynamic) {
-				var message : AST.Message = d;
-				trace(message);
+				var message:AST.Message = d;
+				trace('${toString()} : ' + message);
+			});
+
+			socket.on(CHECKIN, function(d:Dynamic) {
+				trace('${toString()} : Server :: ${CHECKIN}');
+				socket.emit(SERVER_CHECKIN, untyped {checkin: true});
+			});
+			socket.on(RENDER_CLEAR, function(d:Dynamic) {
+				var data:AST.ConvertVideo = d;
+				trace('${toString()} : combine: ${data}');
+
+				var _exportFolder = validateExportfolder(data.exportFolder);
+				var dir = validatePath(_exportFolder, data.folder);
+
+				var child = ChildProcess.exec('rm -rf ${dir}', function(err, stdout, stderr) {
+					trace('${toString()} : err: $err');
+					trace('${toString()} : stdout: $stdout');
+					trace('${toString()} : stderr: $stderr');
+				});
+
+				child.stdout.pipe(process.stdout);
+				child.on('exit', function() {
+					trace('${toString()} delete folder "${dir}"');
+					socket.emit(MESSAGE, {message: 'Folder "${dir}" is deleted'});
+					// process.exit(process.exitCode);
+				});
 			});
 
 			socket.on(SEND, function(data:Dynamic) {
 				io.sockets.emit('id', data.id);
-				trace('send data -> ' + data.id);
+				trace('${toString()} : send data -> ' + data.id);
 			});
 
 			socket.on(MARKDOWN, function(d:Dynamic) {
-				var data : AST.MarkDown = d;
-				trace('markdown');
+				var data:AST.MarkDown = d;
+				trace('${toString()} : markdown');
 
-				validatePath (data.exportFolder, data.folder);
-				var path : FsPath = Node.__dirname + '/${data.exportFolder}/${data.folder}/${data.name}';
+				validatePath(data.exportFolder, data.folder);
+				var path:FsPath = Node.__dirname + '/${data.exportFolder}/${data.folder}/${data.name}';
 
 				Fs.writeFile(path, data.content, function(err) {
-				if (err != null) console.log(err);
+					if (err != null)
+						console.log(err);
 					console.log("Successfully Written to File.");
 				});
-
-
 			});
 			socket.on(COMBINE, function(d:Dynamic) {
-				var data : AST.ConvertVideo = d;
-				trace('combine: ${data}');
+				var data:AST.ConvertVideo = d;
+				trace('${toString()} : combine: ${data}');
+
+
+				// writeMarkdown(data);
 
 				// ChildProcess.exec('echo "The \\$$HOME variable is $$HOME"', function (err, stdout, stderr) {
-				// 	trace('err: $err');
-				// 	trace('stdout: $stdout');
-				// 	trace('stderr: $stderr');
+				// 	trace('${toString()} : err: $err');
+				// 	trace('${toString()} : stdout: $stdout');
+				// 	trace('${toString()} : stderr: $stderr');
 				// });
 
-				var _exportFolder = validateExportfolder (data.exportFolder);
-				var dir = validatePath (_exportFolder, data.folder);
+				// if(data.clear != null){
+				// 	trace('${toString()} clear folder: ${data.clear}');
+				// }
 
-				trace('ffmpeg -y -r 30 -i ${dir}/frame-%04d.png -vcodec libx264 -threads 0 ${dir}/output.mp4');
+				var _exportFolder = validateExportfolder(data.exportFolder);
+				var dir = validatePath(_exportFolder, data.folder);
 
+				trace('${toString()} : ffmpeg -y -r 60 -i ${dir}/${data.name}-%04d.png -vcodec libx264 -threads 0 ${dir}/${data.name}_output_60fps.mp4');
+				// ChildProcess.exec('ffmpeg -y -r 60 -i ${dir}/${data.name}-%04d.png -vcodec libx264 -threads 0 ${dir}/${data.name}_output_60fps.mp4', function (err, stdout, stderr) {
+				// 	trace('${toString()} : err: $err');
+				// 	trace('${toString()} : stdout: $stdout');
+				// 	trace('${toString()} : stderr: $stderr');
+				// });
 
-				ChildProcess.exec('ffmpeg -y -r 30 -i ${dir}/frame-%04d.png -vcodec libx264 -threads 0 ${dir}/output.mp4', function (err, stdout, stderr) {
-					trace('err: $err');
-					trace('stdout: $stdout');
-					trace('stderr: $stderr');
+				trace('${toString()} : ffmpeg -y -r 30 -i ${dir}/${data.name}-%04d.png -c:v libx264 -strict -2 -pix_fmt yuv420p -shortest -filter:v "setpts=0.5*PTS"  ${dir}/${data.name}_output_30fps.mp4');
+				var child = ChildProcess.exec('ffmpeg -y -r 30 -i ${dir}/${data.name}-%04d.png -c:v libx264 -strict -2 -pix_fmt yuv420p -shortest -filter:v "setpts=0.5*PTS"  ${dir}/${data.name}_output_30fps.mp4', function (err, stdout, stderr) {
+					trace('${toString()} : err: $err');
+					trace('${toString()} : stdout: $stdout');
+					trace('${toString()} : stderr: $stderr');
+				});
+
+				// trace('${toString()} : ffmpeg -y -r 30 -i ${dir}/${data.name}-%04d.png -vcodec libx264 -filter:v "setpts=0.5*PTS" -threads 0 ${dir}/${data.name}_output_30fps.mp4');
+				// trace('${toString()} : ffmpeg -y -r 30 -i ${dir}/${data.name}-%04d.png -c:v libx264 -strict -2 -pix_fmt yuv420p -shortest ${dir}/${data.name}_output_30fps.mp4');
+				// var child = ChildProcess.exec('ffmpeg -y -r 30 -i ${dir}/${data.name}-%04d.png -vcodec libx264 -filter:v "setpts=0.5*PTS" -threads 0 ${dir}/${data.name}_output_30fps.mp4',function(err, stdout, stderr) {
+				// 		trace('${toString()} : err: $err');
+				// 		trace('${toString()} : stdout: $stdout');
+				// 		trace('${toString()} : stderr: $stderr');
+				// });
+
+				child.stdout.pipe(process.stdout);
+				child.on('exit', function() {
+					trace('${toString()} generate is done');
+					trace ('ffmpeg -i ${dir}/${data.name}_output_30fps.mp4 -hide_banner');
+					// ChildProcess.execFile('ffmpeg', ['-i ${dir}/${data.name}_output_30fps.mp4', '-hide_banner'],function (err, stdout, stderr)  {
+					// 	trace('${toString()} : err: $err');
+					// 	trace('${toString()} : stdout: $stdout');
+					// 	trace('${toString()} : stderr: $stderr');
+					// });
+
+					socket.emit(RENDER_DONE, {message: 'render is done'});
+					socket.emit(MESSAGE, {message: 'file is ready "${dir}"'});
+					// process.exit(process.exitCode);
+					// process.exit(0);
 				});
 
 				// just video
@@ -118,84 +181,77 @@ class MainServer {
 				// ffmpeg -loop 1 -i image.jpg  -i music.ogg -c:v libx264 -strict -2 -c:a aac -ar 44100 -r 30 -pix_fmt yuv420p -shortest out.mov
 
 				// insta
-				// ffmpeg -threads 2 -i input.3gp -vf crop=720:720:0:0 -framerate 30 -strict experimental -qscale 0 cropped-square.mp4
-
+				// ffmpeg -threads 2 -i inpugp -vf crop=720:720:0:0 -framerate 30 -strict experimental -qscale 0 cropped-square.mp4
 			});
 			socket.on(SEQUENCE, function(d:Dynamic) {
-				var data : AST.IMAGE = d;
+				var data:AST.IMAGE = d;
 				data.file = data.file.split(',')[1]; // Get rid of the data:image/png;base64 at the beginning of the file data
 				var buffer = Buffer.from(data.file, 'base64');
 
-				var _exportFolder = validateExportfolder (data.exportFolder);
-				var dir = validatePath (_exportFolder, data.folder);
+				var _exportFolder = validateExportfolder(data.exportFolder);
+				var dir = validatePath(_exportFolder, data.folder);
 
-				Fs.writeFile(
-					'${dir}/${data.name}.png',
-					buffer, function (e){
-						if(e != null){
-							trace('something wrong $e');
-						} else {
-							trace('WRITE :: ${dir}/${data.name}.png');
-						}
-					});
-
+				Fs.writeFile('${dir}/${data.name}.png', buffer, function(e) {
+					if (e != null) {
+						trace('${toString()} : something wrong $e');
+					} else {
+						trace('${toString()} : WRITE :: ${dir}/${data.name}.png');
+					}
+				});
 			});
 
 			socket.on(IMAGE, function(d:Dynamic) {
-				var data : AST.IMAGE = d;
+				var data:AST.IMAGE = d;
 				data.file = data.file.split(',')[1]; // Get rid of the data:image/png;base64 at the beginning of the file data
 				var buffer = Buffer.from(data.file, 'base64');
 
-
-
 				trace(Node.__dirname);
-				trace('_id: ${data._id}');
-				trace('_type: ${data._type}');
-				trace('name: ${data.name}');
-				trace('exportFolder: ${data.exportFolder}');
-				trace('folder: ${data.folder}');
+				trace('${toString()} : _id: ${data._id}');
+				trace('${toString()} : _type: ${data._type}');
+				trace('${toString()} : name: ${data.name}');
+				trace('${toString()} : exportFolder: ${data.exportFolder}');
+				trace('${toString()} : folder: ${data.folder}');
 
-				var _type = data._type.replace('image/','');
-				if(_type == null) _type = 'jpg'; // check for jpg/
+				var _type = data._type.replace('image/', '');
+				if (_type == null)
+					_type = 'jpg'; // check for jpg/
 
 				var _folder = data.folder;
-				if(_folder == null) _folder = 'tmp';
+				if (_folder == null)
+					_folder = 'tmp';
 
 				var _exportFolder = data.exportFolder;
-				if(_exportFolder == null) _exportFolder = 'export';
+				if (_exportFolder == null)
+					_exportFolder = 'export';
 
-				var dir = validatePath (_exportFolder, _folder);
+				var dir = validatePath(_exportFolder, _folder);
 
-				trace('dir" $dir');
-				trace('path : ${dir}/${data.name}.${_type}');
+				trace('${toString()} : dir" $dir');
+				trace('${toString()} : path : ${dir}/${data.name}.${_type}');
 
-				Fs.writeFile(
-					Node.__dirname + '/${_exportFolder}/${_folder}/${data.name}.${_type}',
-					buffer, function (e){
-						if(e != null){
-							trace('something wrong $e');
-						} else {
-							trace(e);
-						}
-					});
+				Fs.writeFile(Node.__dirname + '/${_exportFolder}/${_folder}/${data.name}.${_type}', buffer, function(e) {
+					if (e != null) {
+						trace('${toString()} : something wrong $e');
+					} else {
+						trace(e);
+					}
+				});
 			});
 			socket.on(RENDER_FRAME, function(d:Dynamic) {
-				var data : AST.RENDER_FRAME = d;
+				var data:AST.RENDER_FRAME = d;
 				data.file = data.file.split(',')[1]; // Get rid of the data:image/png;base64 at the beginning of the file data
 				// var buffer = new Buffer(data.file, 'base64'); // deprecated
 				var buffer = Buffer.from(data.file, 'base64');
 				trace(data._id);
 				trace(data.name);
 				trace(Node.__dirname);
-				Fs.writeFile(
-					Node.__dirname + '/tmp/frame-' + data.frame + '.png',
-					buffer, function (e){
-						if(e != null){
-							trace('something wrong $e');
-						} else {
-							trace(e);
-						}
-					});
+				Fs.writeFile(Node.__dirname + '/tmp/frame-' + data.frame + '.png', buffer, function(e) {
+					if (e != null) {
+						trace('${toString()} : something wrong $e');
+					} else {
+						trace(e);
+					}
+				});
 				// Fs.writeFile(
 				// 	Node.__dirname + '/tmp/frame-' + data.frame + '.png',
 				// 	buffer.toString('binary'), 'binary');
@@ -203,40 +259,57 @@ class MainServer {
 		});
 
 		server.listen(port);
-		trace('Listening on port: ${port} (http://localhost:${port})');
+		trace('${toString()} : Listening on port: ${port} (http://localhost:${port})');
 	}
 
-	function validateName (name:String) : String {
+	function writeMarkdown(data:AST.ConvertVideo) {
+		var _exportFolder = validateExportfolder(data.exportFolder);
+		var dir = validatePath(_exportFolder, data.folder);
+		var description = (data.description != null) ? data.description : 'nothing to mention about this project';
+		var path:FsPath = dir + '/${data.name}_.md';
+		var _content = '# ${data.name}\n\n${description}';
+		Fs.writeFile(path, _content, function(err) {
+			if (err != null)
+				console.log(err);
+			console.log("Successfully Written to File.");
+		});
+	}
+
+	function validateName(name:String):String {
 		var id = Std.string(Date.now().getTime());
-		if (name == ""){
+		if (name == "") {
 			name = 'frame-$id';
 		}
 		return name;
 	}
 
-	function validateExportfolder (name:String) : String {
+	function validateExportfolder(name:String):String {
 		var _exportFolder = name;
-		if(_exportFolder == null) _exportFolder = 'export';
+		if (_exportFolder == null)
+			_exportFolder = 'export';
 		return _exportFolder;
 	}
 
-	function validatePath (exportFolder:String, folder:String):FsPath{
+	function validatePath(exportFolder:String, folder:String):FsPath {
+		// var _folder = data.folder;
+		// if(_folder == null) _folder = 'tmp';
 
-				// var _folder = data.folder;
-				// if(_folder == null) _folder = 'tmp';
-
-				// var _exportFolder = data.exportFolder;
-				// if(_exportFolder == null) _exportFolder = 'export';
+		// var _exportFolder = data.exportFolder;
+		// if(_exportFolder == null) _exportFolder = 'export';
 
 		var dir = Node.__dirname + '/${exportFolder}/${folder}';
-		if (!Fs.existsSync(dir)){
-    		Fs.mkdirSync(dir);
+		if (!Fs.existsSync(dir)) {
+			Fs.mkdirSync(dir);
 		}
 		return dir;
 	}
 
 	function saveFile(filename:String, str:String) {
 		sys.io.File.saveContent(Node.__dirname + '/_data/${filename}', str);
+	}
+
+	function toString():String {
+		return '[SERVER]';
 	}
 
 	static public function main() {

@@ -4,3 +4,5 @@
 -main MainServer
 -js bin/server.js
 -dce full
+# for cleaner JavaScript output, since node.js is ES5-compilant)
+-D js-es5

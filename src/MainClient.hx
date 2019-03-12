@@ -18,13 +18,17 @@ class MainClient {
 	var frameCounter = 0;
 	var _isRecording : Bool = false;
 
+	var isDebug = false;
+
 	public function new() {
-		console.log('CLIENT/START :: ${App.NAME} :: build: ${App.BUILD} ');
+		console.log('${toString()} : START :: ${App.NAME} :: build: ${App.BUILD} ');
 		document.addEventListener("DOMContentLoaded", function(event) {
-			console.log('Dom ready');
-			initSocket();
+			console.log('${toString()} : Dom ready');
+			if(isDebug) {
+				initSocket();
+				initQuickSettings();
+			}
 			initCanvas();
-			initQuickSettings();
 		});
 	}
 
@@ -34,19 +38,21 @@ class MainClient {
 		_socket = js.browser.SocketIo.connect('http://localhost:${App.PORT}');
 		_socket.on('message', function(data) {
 			if (data.message != null) {
-				trace("data: " + data);
+				trace('${toString()} : ${toString()}data: ' + data);
 			} else {
-				trace("There is a problem: " + data);
+				trace('${toString()} : ${toString()}There is a problem: ' + data);
 			}
 		});
 	}
 
 	function initCanvas(){
 		var cc = new CC100();
-		_socket.emit(SEND,{
-			id: 'foo',
-			file: 'x'
-		});
+		if(isDebug){
+			_socket.emit(SEND,{
+				id: 'foo',
+				file: 'x'
+			});
+		}
 	}
 	function initQuickSettings() {
 		// demo/basic example
@@ -77,7 +83,7 @@ class MainClient {
 			_id : 'id-message',
 			message: "mijn boodschap"
 		}
-		trace('MESSAGE : $data');
+		trace('${toString()} : MESSAGE : $data');
 		_socket.emit(MESSAGE, data);
 	}
 
@@ -90,7 +96,7 @@ class MainClient {
 
 
 	function toggleRecording (isRecording:Bool)  {
-		trace('toggleRecording: $isRecording');
+		trace('${toString()} : toggleRecording: $isRecording');
 		_isRecording = isRecording;
 		if(_isRecording){
 			frameCounter = 0;
@@ -133,7 +139,7 @@ class MainClient {
 			name: 'frame-${Std.string(frameCounter).lpad('0',4)}',
 			folder: 'sequence',
 		}
-		trace('renderSequence : ${data._id}');
+		trace('${toString()} : renderSequence : ${data._id}');
 		_socket.emit(SEQUENCE, data);
 
 		frameCounter++;
@@ -161,7 +167,7 @@ class MainClient {
 			folder: 'img',
 			exportFolder: 'export',
 		}
-		trace('renderImage : ${data._type}');
+		trace('${toString()} : renderImage : ${data._type}');
 		_socket.emit(IMAGE, data);
 	}
 
@@ -177,8 +183,12 @@ class MainClient {
 			name: 'name-${Std.string(frameCounter).lpad('0',4)}',
 			folder: 'export'
 		}
-		trace('renderFrameHandler : ${data.name}');
+		trace('${toString()} : renderFrameHandler : ${data.name}');
 		_socket.emit(RENDER_FRAME, data);
+	}
+
+	function toString():String{
+		return '[Client]';
 	}
 
 	static public function main() {

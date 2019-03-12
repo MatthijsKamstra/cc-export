@@ -4,6 +4,10 @@ import js.Browser.*;
 import js.html.*;
 import Sketch;
 
+import cc.util.SocketUtil;
+
+using StringTools;
+
 class CC100 extends SketchBase {
 	var shapeArray:Array<Circle> = [];
 	var grid:GridUtil = new GridUtil();
@@ -20,6 +24,9 @@ class CC100 extends SketchBase {
 	var panel1:QuickSettings;
 	// animate
 	var dot:Circle;
+	// export to node server
+	var export:SocketUtil;
+	var startTime:Float;
 
 	public function new() {
 		// setup Sketch
@@ -31,6 +38,8 @@ class CC100 extends SketchBase {
 		option.scale = true;
 		var ctx:CanvasRenderingContext2D = Sketch.create("creative_code_mck", option);
 
+
+		startTime = haxe.Timer.stamp();
 		init();
 
 		super(ctx);
@@ -40,6 +49,7 @@ class CC100 extends SketchBase {
 		dot = createShape(100, {x: w / 2, y: h / 2});
 		// <link href="https://fonts.googleapis.com/css?family=Oswald:200,300,400,500,600,700" rel="stylesheet">
 		FontUtil.embedGoogleFont('Oswald:200,300,400,500,600,700', onEmbedHandler);
+		FontUtil.embedGoogleFont('Share+Tech+Mono', onEmbedHandler);
 		// createQuickSettings();
 		onAnimateHandler(dot);
 	}
@@ -47,6 +57,8 @@ class CC100 extends SketchBase {
 	function onEmbedHandler(e) {
 		trace('onEmbedHandler :: ${toString()} -> "${e}"');
 		drawShape();
+
+		export.start();
 	}
 
 	function createShape(i:Int, ?point:Point) {
@@ -88,12 +100,55 @@ class CC100 extends SketchBase {
 		// ctx.strokeColour(rgb.r, rgb.g, rgb.b);
 		// ctx.xcross(w/2, h/2, 200);
 
+		ctx.fillStyle = getColourObj(_color2);
+		FontUtil.create(ctx, '${export.count}/${export.delay}sec/${export.duration}sec/${export.frames}frames')
+			.x(w2)
+			.y(h4*1)
+			.centerAlign()
+			.size(60)
+			.font("Share Tech Mono")
+			.draw();
+
+
 		ctx.fillStyle = getColourObj(_color4);
-		FontUtil.centerFillText(ctx, '${toString()}', w / 2, h / 2, "'Oswald', sans-serif;", 260);
+		FontUtil.create(ctx, '${toString()}')
+			.x(w2)
+			.y(h2)
+			.centerAlign()
+			.size(260)
+			.font("'Oswald', sans-serif;")
+			.draw();
+
+
+		var time = Date.now();
+		var hours = time.getHours(); // 24
+		var min = time.getMinutes(); // 60
+		var sec = time.getSeconds(); // 60
+		// var sec = time.get() + 1; // 60
+
+		var text = '${Std.string(hours).lpad('0',2)}:${Std.string(min).lpad('0',2)}:${Std.string(sec).lpad('0',2)}';
+
+		ctx.fillStyle = getColourObj(_color3);
+		FontUtil.create(ctx, text)
+			.x(w2)
+			.y(h4*3)
+			.centerAlign()
+			.size(160)
+			.font("Share Tech Mono")
+			.draw();
+
+		ctx.fillStyle = getColourObj(_color2);
+		FontUtil.create(ctx, '${haxe.Timer.stamp() - startTime}')
+			.x(w4)
+			.y(h - 100)
+			.leftAlign()
+			.size(50)
+			.font("Share Tech Mono")
+			.draw();
 
 		ctx.strokeColourRGB(_color3);
-		ctx.strokeWeight(2);
-		ctx.circleStroke(dot.x, dot.y, 20);
+		ctx.strokeWeight(20);
+		ctx.circleStroke(dot.x, dot.y, 100);
 	}
 
 	override function setup() {
@@ -117,11 +172,24 @@ class CC100 extends SketchBase {
 		for (i in 0...grid.array.length) {
 			shapeArray.push(createShape(i, grid.array[i]));
 		}
+
+		export = new SocketUtil(ctx);
+		export.time(3,2);
+		export.name('${toString()}');
+		export.folder('_test');
+		// export.debug(isDebug);
+		export.clear(true);
+
+
 	}
 
 	override function draw() {
 		// trace('DRAW :: ${toString()}');
 		drawShape();
 		// stop();
+	}
+
+	override function toString(){
+		return 'cc100';
 	}
 }

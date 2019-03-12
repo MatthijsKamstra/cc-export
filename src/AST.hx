@@ -44,4 +44,8 @@ typedef ConvertVideo = {
 	var name:String;
 	var folder:String;
 	@:optional var exportFolder:String;
+	@:optional var clear:Bool;
+	@:optional var description:String;
+	@:optional var fps:Int; // 60 default
+
 };
