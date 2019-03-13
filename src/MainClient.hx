@@ -7,8 +7,10 @@ import art.*;
 // settings
 import quicksettings.QuickSettings;
 // constants
-import model.constants.SocketName.*;
 import model.constants.App;
+// AST and Export
+import cc.*;
+import cc.tool.Export.*;
 
 using StringTools;
 
@@ -79,7 +81,7 @@ class MainClient {
 	// ____________________________________ set settings vars ____________________________________
 
 	function sendMessage(){
-		var data : AST.Message = {
+		var data : AST.EXPORT_MESSAGE = {
 			_id : 'id-message',
 			message: "mijn boodschap"
 		}
@@ -106,7 +108,7 @@ class MainClient {
 
 	function convertRecording (e)  {
 		trace(e);
-		var data : AST.ConvertVideo = {
+		var data : AST.EXPORT_CONVERT_VIDEO = {
 			_id: getId(),
 			name: 'frame-${Std.string(frameCounter).lpad('0',4)}',
 			folder: 'sequence',
@@ -117,7 +119,7 @@ class MainClient {
 	// ____________________________________ markdown ____________________________________
 
 	function writeReadme (e)  {
-		var data : AST.MarkDown = {
+		var data : AST.EXPORT_MD = {
 			name: 'readme.md',
 			content: 'test me',
 			folder:'output',
@@ -132,7 +134,7 @@ class MainClient {
 		var canvas : js.html.CanvasElement = cast document.getElementById('creative_code_mck');
 		var dataString = canvas.toDataURL(); // default png
 		var id = Std.string(Date.now().getTime());
-		var data : AST.IMAGE = {
+		var data : AST.EXPORT_IMAGE = {
 			_id : id,
 			file: dataString,
 			// name: 'frame-${id.lpad('0',4)}',
@@ -158,7 +160,7 @@ class MainClient {
 		var dataString = canvas.toDataURL(Std.string(type), 1); // 1 is heighest value, only works with jpg/webp
 
 		var id = Std.string(Date.now().getTime());
-		var data : AST.IMAGE = {
+		var data : AST.EXPORT_IMAGE = {
 			_id : id,
 			_type : Std.string(type),
 			file: dataString,
@@ -176,7 +178,7 @@ class MainClient {
 		var dataString = canvas.toDataURL();
 
 		frameCounter++;
-		var data : AST.RENDER_FRAME = {
+		var data : AST.EXPORT_FRAME = {
 			_id : 'id-renderframe',
 			file: dataString,
 			frame: frameCounter,

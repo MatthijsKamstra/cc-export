@@ -5,18 +5,18 @@ import js.Node;
 import js.Node.console;
 import js.node.Fs;
 import js.node.Path;
-import js.node.Require;
 import js.node.Buffer;
 import js.node.*;
 import js.npm.Express;
 import js.npm.express.*;
-import js.npm.SocketIo;
+// get the cc lib for export and AST
+import Sketch;
+import cc.tool.Export.*;
+import cc.*;
 // constants
-import model.constants.SocketName.*;
 import model.constants.App;
 import model.config.Config;
 //
-import js.node.ChildProcess.*;
 
 using StringTools;
 
@@ -62,14 +62,14 @@ class MainServer {
 			res.sendFile(Node.__dirname + '/public/index.html');
 		});
 		app.get('/test', function(req:Request, res:Response) {
-			res.sendFile(Node.__dirname + '/public/index.html');
+			res.sendFile(Node.__dirname + '/public/test.html');
 		});
 
 		io.on('connection', function(socket) {
 			socket.emit(MESSAGE, {message: 'Welcome from the Export Node.js server'});
 
 			socket.on(MESSAGE, function(d:Dynamic) {
-				var message:AST.Message = d;
+				var message:AST.EXPORT_MESSAGE = d;
 				trace('${toString()} : ' + message);
 			});
 
@@ -78,7 +78,7 @@ class MainServer {
 				socket.emit(SERVER_CHECKIN, untyped {checkin: true});
 			});
 			socket.on(RENDER_CLEAR, function(d:Dynamic) {
-				var data:AST.ConvertVideo = d;
+				var data:AST.EXPORT_CONVERT_VIDEO = d;
 				trace('${toString()} : combine: ${data}');
 
 				var _exportFolder = validateExportfolder(data.exportFolder);
@@ -104,7 +104,7 @@ class MainServer {
 			});
 
 			socket.on(MARKDOWN, function(d:Dynamic) {
-				var data:AST.MarkDown = d;
+				var data:AST.EXPORT_MD = d;
 				trace('${toString()} : markdown');
 
 				validatePath(data.exportFolder, data.folder);
@@ -117,7 +117,7 @@ class MainServer {
 				});
 			});
 			socket.on(COMBINE, function(d:Dynamic) {
-				var data:AST.ConvertVideo = d;
+				var data:AST.EXPORT_CONVERT_VIDEO = d;
 				trace('${toString()} : combine: ${data}');
 
 
@@ -136,7 +136,7 @@ class MainServer {
 				var _exportFolder = validateExportfolder(data.exportFolder);
 				var dir = validatePath(_exportFolder, data.folder);
 
-				trace('${toString()} : ffmpeg -y -r 60 -i ${dir}/${data.name}-%04d.png -vcodec libx264 -threads 0 ${dir}/${data.name}_output_60fps.mp4');
+				// trace('${toString()} : ffmpeg -y -r 60 -i ${dir}/${data.name}-%04d.png -vcodec libx264 -threads 0 ${dir}/${data.name}_output_60fps.mp4');
 				// ChildProcess.exec('ffmpeg -y -r 60 -i ${dir}/${data.name}-%04d.png -vcodec libx264 -threads 0 ${dir}/${data.name}_output_60fps.mp4', function (err, stdout, stderr) {
 				// 	trace('${toString()} : err: $err');
 				// 	trace('${toString()} : stdout: $stdout');
@@ -184,7 +184,7 @@ class MainServer {
 				// ffmpeg -threads 2 -i inpugp -vf crop=720:720:0:0 -framerate 30 -strict experimental -qscale 0 cropped-square.mp4
 			});
 			socket.on(SEQUENCE, function(d:Dynamic) {
-				var data:AST.IMAGE = d;
+				var data:AST.EXPORT_IMAGE = d;
 				data.file = data.file.split(',')[1]; // Get rid of the data:image/png;base64 at the beginning of the file data
 				var buffer = Buffer.from(data.file, 'base64');
 
@@ -201,7 +201,7 @@ class MainServer {
 			});
 
 			socket.on(IMAGE, function(d:Dynamic) {
-				var data:AST.IMAGE = d;
+				var data:AST.EXPORT_IMAGE = d;
 				data.file = data.file.split(',')[1]; // Get rid of the data:image/png;base64 at the beginning of the file data
 				var buffer = Buffer.from(data.file, 'base64');
 
@@ -238,7 +238,7 @@ class MainServer {
 				});
 			});
 			socket.on(RENDER_FRAME, function(d:Dynamic) {
-				var data:AST.RENDER_FRAME = d;
+				var data:AST.EXPORT_FRAME = d;
 				data.file = data.file.split(',')[1]; // Get rid of the data:image/png;base64 at the beginning of the file data
 				// var buffer = new Buffer(data.file, 'base64'); // deprecated
 				var buffer = Buffer.from(data.file, 'base64');
@@ -262,7 +262,7 @@ class MainServer {
 		trace('${toString()} : Listening on port: ${port} (http://localhost:${port})');
 	}
 
-	function writeMarkdown(data:AST.ConvertVideo) {
+	function writeMarkdown(data:AST.EXPORT_CONVERT_VIDEO) {
 		var _exportFolder = validateExportfolder(data.exportFolder);
 		var dir = validatePath(_exportFolder, data.folder);
 		var description = (data.description != null) ? data.description : 'nothing to mention about this project';

@@ -4,7 +4,7 @@ import js.Browser.*;
 import js.html.*;
 import Sketch;
 
-import cc.util.SocketUtil;
+import cc.tool.Export;
 
 using StringTools;
 
@@ -25,7 +25,7 @@ class CC100 extends SketchBase {
 	// animate
 	var dot:Circle;
 	// export to node server
-	var export:SocketUtil;
+	var export:Export;
 	var startTime:Float;
 
 	public function new() {
@@ -173,7 +173,7 @@ class CC100 extends SketchBase {
 			shapeArray.push(createShape(i, grid.array[i]));
 		}
 
-		export = new SocketUtil(ctx);
+		export = new Export(ctx);
 		export.time(3,2);
 		export.name('${toString()}');
 		export.folder('_test');
