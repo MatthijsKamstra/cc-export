@@ -1,0 +1,15 @@
+# libs used in project
+-lib js-kit
+-lib hxnodejs
+-lib cc-sketch
+-lib hxquicksettings
+# source folder
+-cp src
+# class entry point
+-main MainClientIndex
+# JavaScript target
+-js bin/public/js/index.js
+-D source-map-content
+-debug
+-dce full
+-D hxnodejs_no_version_warning

@@ -8,6 +8,9 @@
 -cmd echo '> build target javascript (build_client.hxml)'
 -cmd haxe build_client.hxml
 
+-cmd echo '> build target javascript (build_client_index.hxml)'
+-cmd haxe build_client_index.hxml
+
 # Add an other target (for example node.js)
 -cmd echo '> build target js (build_server.hxml)'
 -cmd haxe build_server.hxml

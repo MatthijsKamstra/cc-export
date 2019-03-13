@@ -3,7 +3,7 @@
 -lib js-kit
 -lib hxnodejs
 # js
-# -lib hxquicksettings
+-lib hxquicksettings
 # -lib thx.color
 # -lib hxColorToolkit
 # -lib msignal
