@@ -2,6 +2,18 @@
 Creative Coding video export
 
 
+## how to
+
+lazy start: launch browser, run watch (onchange haxe files livereload)
+```
+npm run start
+```
+
+start without livereload
+```
+npm run nodemon
+```
+
 ## Instagram
 
 the Instagram video time limit is 3–60 seconds
