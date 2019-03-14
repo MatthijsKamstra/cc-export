@@ -38,7 +38,11 @@ class MainServer {
 
 		app = new js.npm.Express();
 		server = js.node.Http.createServer(cast app);
-		io = new js.npm.socketio.Server(server);
+		io = new js.npm.socketio.Server(server, null, untyped {
+			pingTimeout: 60000, // default 5000
+			pingInterval: 25000, // default 25000
+		});
+
 
 		// setup
 		// app.set('port', port);
@@ -143,6 +147,7 @@ class MainServer {
 				// 	trace('${toString()} : stderr: $stderr');
 				// });
 
+				socket.emit(MESSAGE, {message: 'Start rendering video with ffmpg (${Date.now()})'});
 				trace('${toString()} : ffmpeg -y -r 30 -i ${dir}/${data.name}-%04d.png -c:v libx264 -strict -2 -pix_fmt yuv420p -shortest -filter:v "setpts=0.5*PTS"  ${dir}/${data.name}_output_30fps.mp4');
 				var child = ChildProcess.exec('ffmpeg -y -r 30 -i ${dir}/${data.name}-%04d.png -c:v libx264 -strict -2 -pix_fmt yuv420p -shortest -filter:v "setpts=0.5*PTS"  ${dir}/${data.name}_output_30fps.mp4', function (err, stdout, stderr) {
 					trace('${toString()} : err: $err');
@@ -169,7 +174,7 @@ class MainServer {
 					// });
 
 					socket.emit(RENDER_DONE, {message: 'render is done'});
-					socket.emit(MESSAGE, {message: 'file is ready "${dir}"'});
+					socket.emit(MESSAGE, {message: 'Render file is ready "${dir}/${data.name}_output_30fps.mp4" (${Date.now()})'});
 					// process.exit(process.exitCode);
 					// process.exit(0);
 				});
