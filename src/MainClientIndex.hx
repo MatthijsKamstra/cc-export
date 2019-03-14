@@ -16,8 +16,26 @@ using StringTools;
 
 class MainClientIndex {
 
+	var _socket:Dynamic;
+
 	public function new (){
-		trace('yep');
+		console.log('${toString()} : START :: ${App.NAME} :: build: ${App.BUILD} ');
+		document.addEventListener("DOMContentLoaded", function(event) {
+			console.log('${toString()} : Dom ready');
+			initSocket();
+		});
+	}
+
+	function initSocket():Void {
+		_socket = js.browser.SocketIo.connect('http://localhost:${App.PORT}');
+		_socket.on('message', function(data) {
+			if (data.message != null) {
+				trace('${toString()} : ${toString()}data: ' + data);
+				document.getElementById('feedbackserver').innerText = (data.message);
+			} else {
+				trace('${toString()} : ${toString()}There is a problem: ' + data);
+			}
+		});
 	}
 
 	function toString():String{
