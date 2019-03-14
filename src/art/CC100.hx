@@ -55,7 +55,7 @@ class CC100 extends SketchBase {
 	}
 
 	function onEmbedHandler(e) {
-		trace('onEmbedHandler :: ${toString()} -> "${e}"');
+		trace('${toString()} onEmbedHandler :: ${toString()} -> "${e}"');
 		drawShape();
 
 		export.start();
@@ -152,7 +152,7 @@ class CC100 extends SketchBase {
 	}
 
 	override function setup() {
-		trace('SETUP :: ${toString()}');
+		trace('${toString()} SETUP :: ${toString()}');
 
 		var colorArray = ColorUtil.niceColor100SortedString[randomInt(ColorUtil.niceColor100SortedString.length - 1)];
 		_color0 = hex2RGB(colorArray[0]);
@@ -174,7 +174,7 @@ class CC100 extends SketchBase {
 		}
 
 		export = new Export(ctx);
-		export.time(3,2);
+		export.time(60,2);
 		export.name('${toString()}');
 		export.folder('_test');
 		// export.debug(isDebug);
