@@ -14,6 +14,40 @@ start without livereload
 npm run nodemon
 ```
 
+## use in code
+
+```
+import cc.tool.Export;
+// export to node server
+var export:Export;
+
+// setup export settings
+export = new Export(ctx); 			// bind context
+export.time(60,2);					// 60 seconds recording after 2 second delay (optional)
+export.name('${toString()}');		// file names start with
+export.folder('_test');				// folder name to export in
+// export.debug(isDebug);			// debug
+export.clear(true);					// empty folder when start/restart recording
+
+// start recording
+export.start();
+```
+
+additional
+```
+// might be a good idea to change Sketch, in constructor
+// setup Sketch
+var option = new SketchOption();
+option.width = 1080; // 1080
+// option.height = 1000;
+option.autostart = true;
+option.padding = 10;
+option.scale = true;
+var ctx:CanvasRenderingContext2D = Sketch.create("creative_code_mck", option);
+
+```
+
+
 ## Instagram
 
 the Instagram video time limit is 3–60 seconds
