@@ -3,12 +3,13 @@ package art;
 import js.Browser.*;
 import js.html.*;
 import Sketch;
-
-import cc.tool.Export;
+import cc.tool.export.ExportBase;
+import cc.draw.Text;
 
 using StringTools;
 
-class CC100 extends SketchBase {
+class CC100 extends ExportBase // SketchBase
+{
 	var shapeArray:Array<Circle> = [];
 	var grid:GridUtil = new GridUtil();
 	// sizes
@@ -24,8 +25,6 @@ class CC100 extends SketchBase {
 	var panel1:QuickSettings;
 	// animate
 	var dot:Circle;
-	// export to node server
-	var export:Export;
 	var startTime:Float;
 
 	public function new() {
@@ -37,19 +36,33 @@ class CC100 extends SketchBase {
 		option.padding = 10;
 		option.scale = true;
 		var ctx:CanvasRenderingContext2D = Sketch.create("creative_code_mck", option);
-
-
-		startTime = haxe.Timer.stamp();
-		init();
-
 		super(ctx);
+		init();
 	}
 
 	function init() {
+		export.delayInSeconds(10);
+		export.recordInSeconds(10);
+		export.isDebug(false);
+		export.type(NODE);
+		// trace(export.settings()); // get the settings
+		export.init(); // you always need to set this
+
+		haxe.Timer.delay(function() {
+			trace('start forced recording');
+			export.start();
+		}, 500);
+		haxe.Timer.delay(function() {
+			trace('stop forced recording');
+			export.stop();
+		}, 2500);
+
+		// other stuff
+		startTime = haxe.Timer.stamp();
 		dot = createShape(100, {x: w / 2, y: h / 2});
-		// <link href="https://fonts.googleapis.com/css?family=Oswald:200,300,400,500,600,700" rel="stylesheet">
-		FontUtil.embedGoogleFont('Oswald:200,300,400,500,600,700', onEmbedHandler);
-		FontUtil.embedGoogleFont('Share+Tech+Mono', onEmbedHandler);
+		// embedding text
+		Text.embedGoogleFont('Oswald:200,300,400,500,600,700', onEmbedHandler);
+		Text.embedGoogleFont('Share+Tech+Mono', onEmbedHandler);
 		// createQuickSettings();
 		onAnimateHandler(dot);
 	}
@@ -57,8 +70,6 @@ class CC100 extends SketchBase {
 	function onEmbedHandler(e) {
 		trace('${toString()} onEmbedHandler :: ${toString()} -> "${e}"');
 		drawShape();
-
-		export.start();
 	}
 
 	function createShape(i:Int, ?point:Point) {
@@ -86,6 +97,9 @@ class CC100 extends SketchBase {
 	}
 
 	function drawShape() {
+		if (dot == null)
+			return;
+
 		ctx.clearRect(0, 0, w, h);
 		ctx.backgroundObj(_color0);
 
@@ -101,17 +115,16 @@ class CC100 extends SketchBase {
 		// ctx.xcross(w/2, h/2, 200);
 
 		ctx.fillStyle = getColourObj(_color2);
-		FontUtil.create(ctx, '${export.count}/${export.delay}sec/${export.duration}sec/${export.frames}frames')
+		Text.create(ctx, 'delay${export._delay}frames/record${export._record}frames')
 			.x(w2)
-			.y(h4*1)
+			.y(h4 * 1)
 			.centerAlign()
 			.size(60)
 			.font("Share Tech Mono")
 			.draw();
 
-
 		ctx.fillStyle = getColourObj(_color4);
-		FontUtil.create(ctx, '${toString()}')
+		Text.create(ctx, '${toString()}')
 			.x(w2)
 			.y(h2)
 			.centerAlign()
@@ -119,26 +132,25 @@ class CC100 extends SketchBase {
 			.font("'Oswald', sans-serif;")
 			.draw();
 
-
 		var time = Date.now();
 		var hours = time.getHours(); // 24
 		var min = time.getMinutes(); // 60
 		var sec = time.getSeconds(); // 60
 		// var sec = time.get() + 1; // 60
 
-		var text = '${Std.string(hours).lpad('0',2)}:${Std.string(min).lpad('0',2)}:${Std.string(sec).lpad('0',2)}';
+		var text = '${Std.string(hours).lpad('0', 2)}:${Std.string(min).lpad('0', 2)}:${Std.string(sec).lpad('0', 2)}';
 
 		ctx.fillStyle = getColourObj(_color3);
-		FontUtil.create(ctx, text)
+		Text.create(ctx, text)
 			.x(w2)
-			.y(h4*3)
+			.y(h4 * 3)
 			.centerAlign()
 			.size(160)
 			.font("Share Tech Mono")
 			.draw();
 
 		ctx.fillStyle = getColourObj(_color2);
-		FontUtil.create(ctx, '${haxe.Timer.stamp() - startTime}')
+		Text.create(ctx, '${haxe.Timer.stamp() - startTime}')
 			.x(w4)
 			.y(h - 100)
 			.leftAlign()
@@ -172,15 +184,6 @@ class CC100 extends SketchBase {
 		for (i in 0...grid.array.length) {
 			shapeArray.push(createShape(i, grid.array[i]));
 		}
-
-		export = new Export(ctx);
-		export.time(60,2);
-		export.name('${toString()}');
-		export.folder('_test');
-		// export.debug(isDebug);
-		export.clear(true);
-
-
 	}
 
 	override function draw() {
@@ -189,7 +192,7 @@ class CC100 extends SketchBase {
 		// stop();
 	}
 
-	override function toString(){
+	override function toString() {
 		return 'cc100';
 	}
 }
