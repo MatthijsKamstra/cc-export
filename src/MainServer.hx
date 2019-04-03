@@ -11,13 +11,13 @@ import js.npm.Express;
 import js.npm.express.*;
 // get the cc lib for export and AST
 import Sketch;
-import cc.tool.Export.*;
 import cc.*;
+import cc.tool.export.ExportNames.*;
 // constants
 import model.constants.App;
 import model.config.Config;
-//
 
+//
 using StringTools;
 
 /**
@@ -42,7 +42,6 @@ class MainServer {
 			pingTimeout: 60000, // default 5000
 			pingInterval: 25000, // default 25000
 		});
-
 
 		// setup
 		// app.set('port', port);
@@ -98,6 +97,7 @@ class MainServer {
 				child.on('exit', function() {
 					trace('${toString()} delete folder "${dir}"');
 					socket.emit(MESSAGE, {message: 'Folder "${dir}" is deleted'});
+					socket.emit(RENDER_CLEAR_DONE, {message: 'Folder "${dir}" is deleted'});
 					// process.exit(process.exitCode);
 				});
 			});
@@ -124,7 +124,6 @@ class MainServer {
 				var data:AST.EXPORT_CONVERT_VIDEO = d;
 				trace('${toString()} : combine: ${data}');
 
-
 				// writeMarkdown(data);
 
 				// ChildProcess.exec('echo "The \\$$HOME variable is $$HOME"', function (err, stdout, stderr) {
@@ -149,7 +148,9 @@ class MainServer {
 
 				socket.emit(MESSAGE, {message: 'Start rendering video with ffmpg (${Date.now()})'});
 				trace('${toString()} : ffmpeg -y -r 30 -i ${dir}/${data.name}-%04d.png -c:v libx264 -strict -2 -pix_fmt yuv420p -shortest -filter:v "setpts=0.5*PTS"  ${dir}/${data.name}_output_30fps.mp4');
-				var child = ChildProcess.exec('ffmpeg -y -r 30 -i ${dir}/${data.name}-%04d.png -c:v libx264 -strict -2 -pix_fmt yuv420p -shortest -filter:v "setpts=0.5*PTS"  ${dir}/${data.name}_output_30fps.mp4', function (err, stdout, stderr) {
+				var child = ChildProcess
+					.exec('ffmpeg -y -r 30 -i ${dir}/${data.name}-%04d.png -c:v libx264 -strict -2 -pix_fmt yuv420p -shortest -filter:v "setpts=0.5*PTS"  ${dir}/${data.name}_output_30fps.mp4',
+				function(err, stdout, stderr) {
 					trace('${toString()} : err: $err');
 					trace('${toString()} : stdout: $stdout');
 					trace('${toString()} : stderr: $stderr');
@@ -166,7 +167,7 @@ class MainServer {
 				child.stdout.pipe(process.stdout);
 				child.on('exit', function() {
 					trace('${toString()} generate is done');
-					trace ('ffmpeg -i ${dir}/${data.name}_output_30fps.mp4 -hide_banner');
+					trace('ffmpeg -i ${dir}/${data.name}_output_30fps.mp4 -hide_banner');
 					// ChildProcess.execFile('ffmpeg', ['-i ${dir}/${data.name}_output_30fps.mp4', '-hide_banner'],function (err, stdout, stderr)  {
 					// 	trace('${toString()} : err: $err');
 					// 	trace('${toString()} : stdout: $stdout');
@@ -190,7 +191,7 @@ class MainServer {
 			});
 			socket.on(SEQUENCE, function(d:Dynamic) {
 				var data:AST.EXPORT_IMAGE = d;
-				data.file = data.file.split(',')[1]; // Get rid of the data:image/png;base64 at the beginning of the file data
+				// data.file = data.file.split(',')[1]; // Get rid of the data:image/png;base64 at the beginning of the file data
 				var buffer = Buffer.from(data.file, 'base64');
 
 				var _exportFolder = validateExportfolder(data.exportFolder);
@@ -201,6 +202,7 @@ class MainServer {
 						trace('${toString()} : something wrong $e');
 					} else {
 						trace('${toString()} : WRITE :: ${dir}/${data.name}.png');
+						socket.emit(SEQUENCE_NEXT, {message: 'next file can be send'});
 					}
 				});
 			});
