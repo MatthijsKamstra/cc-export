@@ -12,7 +12,7 @@ import cc.util.AnimateUtil.*;
 
 // utils
 import cc.util.ColorUtil;
-import cc.util.FontUtil;
+import cc.util.*;
 import cc.util.GridUtil;
 import cc.util.MathUtil;
 import cc.util.TextUtil;
