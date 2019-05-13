@@ -85,7 +85,7 @@ class MainServer {
 				trace('${toString()} : combine: ${data}');
 
 				var _exportFolder = validateExportfolder(data.exportFolder);
-				var dir = validatePath(_exportFolder, data.folder);
+				var dir = validatePath(_exportFolder, '${data.folder}/sequence/');
 
 				var child = ChildProcess.exec('rm -rf ${dir}', function(err, stdout, stderr) {
 					trace('${toString()} : err: $err');
@@ -110,14 +110,32 @@ class MainServer {
 			socket.on(MARKDOWN, function(d:Dynamic) {
 				var data:AST.EXPORT_MD = d;
 				trace('${toString()} : markdown');
+				console.warn('this doesn\'t work yet');
 
-				validatePath(data.exportFolder, data.folder);
+				return;
+
+				// var dir = validatePath(_exportFolder, '${data.folder}/sequence/');
 				var path:FsPath = Node.__dirname + '/${data.exportFolder}/${data.folder}/${data.name}';
 
 				Fs.writeFile(path, data.content, function(err) {
-					if (err != null)
+					if (err != null) {
 						console.log(err);
+					}
 					console.log("Successfully Written to File.");
+				});
+			});
+			socket.on('export.file', function(d:Dynamic) {
+				var data:AST.EXPORT_FILE = d;
+
+				var _exportFolder = validateExportfolder(data.exportFolder);
+				var dir = validatePath(_exportFolder, '${data.folder}');
+
+				Fs.writeFile('${dir}/${data.name}', data.content, function(err) {
+					if (err != null) {
+						console.log(err);
+					}
+					console.log("!!!! Successfully Written to File.");
+					socket.emit(MESSAGE, {message: 'Write file "${data.name}" is done "${dir}/${data.name}"'});
 				});
 			});
 			socket.on(COMBINE, function(d:Dynamic) {
@@ -137,7 +155,7 @@ class MainServer {
 				// }
 
 				var _exportFolder = validateExportfolder(data.exportFolder);
-				var dir = validatePath(_exportFolder, data.folder);
+				var dir = validatePath(_exportFolder, '${data.folder}/sequence/');
 
 				// trace('${toString()} : ffmpeg -y -r 60 -i ${dir}/${data.name}-%04d.png -vcodec libx264 -threads 0 ${dir}/${data.name}_output_60fps.mp4');
 				// ChildProcess.exec('ffmpeg -y -r 60 -i ${dir}/${data.name}-%04d.png -vcodec libx264 -threads 0 ${dir}/${data.name}_output_60fps.mp4', function (err, stdout, stderr) {
@@ -147,9 +165,9 @@ class MainServer {
 				// });
 
 				socket.emit(MESSAGE, {message: 'Start rendering video with ffmpg (${Date.now()})'});
-				trace('${toString()} : ffmpeg -y -r 30 -i ${dir}/${data.name}-%04d.png -c:v libx264 -strict -2 -pix_fmt yuv420p -shortest -filter:v "setpts=0.5*PTS"  ${dir}/${data.name}_output_30fps.mp4');
+				trace('${toString()} : ffmpeg -y -r 30 -i ${dir}/${data.name}_%04d.png -c:v libx264 -strict -2 -pix_fmt yuv420p -shortest -filter:v "setpts=0.5*PTS"  ${dir}/${data.name}_output_30fps.mp4');
 				var child = ChildProcess
-					.exec('ffmpeg -y -r 30 -i ${dir}/${data.name}-%04d.png -c:v libx264 -strict -2 -pix_fmt yuv420p -shortest -filter:v "setpts=0.5*PTS"  ${dir}/${data.name}_output_30fps.mp4',
+					.exec('ffmpeg -y -r 30 -i ${dir}/${data.name}_%04d.png -c:v libx264 -strict -2 -pix_fmt yuv420p -shortest -filter:v "setpts=0.5*PTS"  ${dir}/${data.name}_output_30fps.mp4',
 				function(err, stdout, stderr) {
 					trace('${toString()} : err: $err');
 					trace('${toString()} : stdout: $stdout');
@@ -195,7 +213,7 @@ class MainServer {
 				var buffer = Buffer.from(data.file, 'base64');
 
 				var _exportFolder = validateExportfolder(data.exportFolder);
-				var dir = validatePath(_exportFolder, data.folder);
+				var dir = validatePath(_exportFolder, '${data.folder}/sequence/');
 
 				Fs.writeFile('${dir}/${data.name}.png', buffer, function(e) {
 					if (e != null) {
@@ -231,7 +249,7 @@ class MainServer {
 				if (_exportFolder == null)
 					_exportFolder = 'export';
 
-				var dir = validatePath(_exportFolder, _folder);
+				var dir = validatePath(_exportFolder, '${data.folder}/sequence/');
 
 				trace('${toString()} : dir" $dir');
 				trace('${toString()} : path : ${dir}/${data.name}.${_type}');
@@ -271,7 +289,7 @@ class MainServer {
 
 	function writeMarkdown(data:AST.EXPORT_CONVERT_VIDEO) {
 		var _exportFolder = validateExportfolder(data.exportFolder);
-		var dir = validatePath(_exportFolder, data.folder);
+		var dir = validatePath(_exportFolder, '${data.folder}/sequence/');
 		var description = (data.description != null) ? data.description : 'nothing to mention about this project';
 		var path:FsPath = dir + '/${data.name}_.md';
 		var _content = '# ${data.name}\n\n${description}';
@@ -306,7 +324,7 @@ class MainServer {
 
 		var dir = Node.__dirname + '/${exportFolder}/${folder}';
 		if (!Fs.existsSync(dir)) {
-			Fs.mkdirSync(dir);
+			Fs.mkdirSync(dir, untyped {recursive: true});
 		}
 		return dir;
 	}
