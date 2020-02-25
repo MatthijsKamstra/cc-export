@@ -22,7 +22,7 @@ class MainClient {
 	var isDebug = false;
 
 	public function new() {
-		console.log('${toString()} START :: ${App.NAME} :: build: ${App.BUILD} ');
+		console.log('${toString()} START :: ${App.NAME} :: build: ${App.getBuildDate()} ');
 		document.addEventListener("DOMContentLoaded", function(event) {
 			console.log('${toString()} Dom ready');
 			if (isDebug) {

@@ -10,16 +10,15 @@ import quicksettings.QuickSettings;
 import model.constants.App;
 // AST and Export
 import cc.*;
-// import cc.tool.Export.*;
 
+// import cc.tool.Export.*;
 using StringTools;
 
 class MainClientIndex {
-
 	var _socket:Dynamic;
 
-	public function new (){
-		console.log('${toString()} : START :: ${App.NAME} :: build: ${App.BUILD} ');
+	public function new() {
+		console.log('${toString()} : START :: ${App.NAME} :: build: ${App.getBuildDate()} ');
 		document.addEventListener("DOMContentLoaded", function(event) {
 			console.log('${toString()} : Dom ready');
 			initSocket();
@@ -38,7 +37,7 @@ class MainClientIndex {
 		});
 	}
 
-	function toString():String{
+	function toString():String {
 		return '[Client]';
 	}
 
@@ -46,5 +45,3 @@ class MainClientIndex {
 		var main = new MainClientIndex();
 	}
 }
-
-

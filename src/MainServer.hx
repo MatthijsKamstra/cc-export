@@ -31,7 +31,7 @@ class MainServer {
 	var config:Config = new Config();
 
 	public function new() {
-		console.log('${toString()}/START :: ${App.NAME} :: build: ${App.BUILD} ');
+		console.log('${toString()}/START :: ${App.NAME} :: build: ${App.getBuildDate()} ');
 
 		var port = config.PORT;
 		// trace('${toString()} : port: $port');
@@ -166,8 +166,7 @@ class MainServer {
 
 				socket.emit(MESSAGE, {message: 'Start rendering video with ffmpg (${Date.now()})'});
 				trace('${toString()} : ffmpeg -y -r 30 -i ${dir}/${data.name}_%04d.png -c:v libx264 -strict -2 -pix_fmt yuv420p -shortest -filter:v "setpts=0.5*PTS"  ${dir}/${data.name}_output_30fps.mp4');
-				var child = ChildProcess
-					.exec('ffmpeg -y -r 30 -i ${dir}/${data.name}_%04d.png -c:v libx264 -strict -2 -pix_fmt yuv420p -shortest -filter:v "setpts=0.5*PTS"  ${dir}/${data.name}_output_30fps.mp4',
+				var child = ChildProcess.exec('ffmpeg -y -r 30 -i ${dir}/${data.name}_%04d.png -c:v libx264 -strict -2 -pix_fmt yuv420p -shortest -filter:v "setpts=0.5*PTS"  ${dir}/${data.name}_output_30fps.mp4',
 				function(err, stdout, stderr) {
 					trace('${toString()} : err: $err');
 					trace('${toString()} : stdout: $stdout');
