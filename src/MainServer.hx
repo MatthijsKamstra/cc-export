@@ -10,9 +10,7 @@ import js.node.*;
 import js.npm.Express;
 import js.npm.express.*;
 // get the cc lib for export and AST
-import Sketch;
-import cc.*;
-import cc.tool.export.ExportNames.*;
+import export.ExportNames.*;
 // constants
 import model.constants.App;
 import model.config.Config;
@@ -72,7 +70,7 @@ class MainServer {
 			socket.emit(MESSAGE, {message: 'Welcome from the Export Node.js server'});
 
 			socket.on(MESSAGE, function(d:Dynamic) {
-				var message:AST.EXPORT_MESSAGE = d;
+				var message:export.AST.EXPORT_MESSAGE = d;
 				trace('${toString()} : ' + message);
 			});
 
@@ -81,7 +79,7 @@ class MainServer {
 				socket.emit(SERVER_CHECKIN, untyped {checkin: true});
 			});
 			socket.on(RENDER_CLEAR, function(d:Dynamic) {
-				var data:AST.EXPORT_CONVERT_VIDEO = d;
+				var data:export.AST.EXPORT_CONVERT_VIDEO = d;
 				trace('${toString()} : combine: ${data}');
 
 				var _exportFolder = validateExportfolder(data.exportFolder);
@@ -108,7 +106,7 @@ class MainServer {
 			});
 
 			socket.on(MARKDOWN, function(d:Dynamic) {
-				var data:AST.EXPORT_MD = d;
+				var data:export.AST.EXPORT_MD = d;
 				trace('${toString()} : markdown');
 				console.warn('this doesn\'t work yet');
 
@@ -125,7 +123,7 @@ class MainServer {
 				});
 			});
 			socket.on('export.file', function(d:Dynamic) {
-				var data:AST.EXPORT_FILE = d;
+				var data:export.AST.EXPORT_FILE = d;
 
 				var _exportFolder = validateExportfolder(data.exportFolder);
 				var dir = validatePath(_exportFolder, '${data.folder}');
@@ -139,7 +137,7 @@ class MainServer {
 				});
 			});
 			socket.on(COMBINE, function(d:Dynamic) {
-				var data:AST.EXPORT_CONVERT_VIDEO = d;
+				var data:export.AST.EXPORT_CONVERT_VIDEO = d;
 				trace('${toString()} : combine: ${data}');
 
 				// writeMarkdown(data);
@@ -207,7 +205,7 @@ class MainServer {
 				// ffmpeg -threads 2 -i inpugp -vf crop=720:720:0:0 -framerate 30 -strict experimental -qscale 0 cropped-square.mp4
 			});
 			socket.on(SEQUENCE, function(d:Dynamic) {
-				var data:AST.EXPORT_IMAGE = d;
+				var data:export.AST.EXPORT_IMAGE = d;
 				// data.file = data.file.split(',')[1]; // Get rid of the data:image/png;base64 at the beginning of the file data
 				var buffer = Buffer.from(data.file, 'base64');
 
@@ -225,7 +223,7 @@ class MainServer {
 			});
 
 			socket.on(IMAGE, function(d:Dynamic) {
-				var data:AST.EXPORT_IMAGE = d;
+				var data:export.AST.EXPORT_IMAGE = d;
 				data.file = data.file.split(',')[1]; // Get rid of the data:image/png;base64 at the beginning of the file data
 				var buffer = Buffer.from(data.file, 'base64');
 
@@ -262,7 +260,7 @@ class MainServer {
 				});
 			});
 			socket.on(RENDER_FRAME, function(d:Dynamic) {
-				var data:AST.EXPORT_FRAME = d;
+				var data:export.AST.EXPORT_FRAME = d;
 				data.file = data.file.split(',')[1]; // Get rid of the data:image/png;base64 at the beginning of the file data
 				// var buffer = new Buffer(data.file, 'base64'); // deprecated
 				var buffer = Buffer.from(data.file, 'base64');
@@ -286,7 +284,7 @@ class MainServer {
 		trace('${toString()} : Listening on port: ${port} (http://localhost:${port})');
 	}
 
-	function writeMarkdown(data:AST.EXPORT_CONVERT_VIDEO) {
+	function writeMarkdown(data:export.AST.EXPORT_CONVERT_VIDEO) {
 		var _exportFolder = validateExportfolder(data.exportFolder);
 		var dir = validatePath(_exportFolder, '${data.folder}/sequence/');
 		var description = (data.description != null) ? data.description : 'nothing to mention about this project';
