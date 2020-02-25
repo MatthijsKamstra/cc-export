@@ -1,17 +1,32 @@
 package art;
 
-import js.Browser.*;
-import js.html.*;
-import Sketch;
-import cc.tool.export.ExportBase;
-import cc.draw.Text;
+import export.ExportNodeServer;
+import sketcher.draw.Text.TextAlignType;
+import sketcher.util.EmbedUtil;
+import sketcher.lets.easing.Sine;
+import sketcher.lets.Go;
+import Sketcher.Globals.*;
+import sketcher.AST.Point;
+import sketcher.AST.Circle;
+import sketcher.util.ColorUtil;
+import sketcher.util.ColorUtil.*;
+import sketcher.util.GridUtil;
+import sketcher.util.MathUtil.*;
+import sketcher.util.MathUtil;
 
 using StringTools;
 
-class CC100 extends ExportBase // SketchBase
-{
+class CC100 extends SketcherBase {
+	// size
+	var stageW = 1080; // 1024; // video?
+	var stageH = 1080; // 1024; // video?
+	var padding = 50;
+	// family
+	var oswaldFamily:String;
+	var monoFamily:String;
+	//
+	var grid:GridUtil;
 	var shapeArray:Array<Circle> = [];
-	var grid:GridUtil = new GridUtil();
 	// sizes
 	var _radius = 150;
 	var _cellsize = 150;
@@ -21,50 +36,40 @@ class CC100 extends ExportBase // SketchBase
 	var _color2:RGB = null;
 	var _color3:RGB = null;
 	var _color4:RGB = null;
-	// settings
-	var panel1:QuickSettings;
+
 	// animate
 	var dot:Circle;
 	var startTime:Float;
 
 	public function new() {
 		// setup Sketch
-		var option = new SketchOption();
-		option.width = 1080; // 1080
-		// option.height = 1000;
-		option.autostart = true;
-		option.padding = 10;
-		option.scale = true;
-		var ctx:CanvasRenderingContext2D = Sketch.create("creative_code_mck", option);
-		super(ctx);
-		init();
+		var settings:Settings = new Settings(stageW, stageH, 'canvas');
+		settings.autostart = true;
+		settings.padding = 0;
+		settings.scale = true;
+		settings.elementID = 'creative_code_mck';
+
+		super(settings);
 	}
 
 	function init() {
-		export.delayInSeconds(10);
-		export.recordInSeconds(10);
-		export.isDebug(false);
-		export.type(NODE);
-		// trace(export.settings()); // get the settings
-		export.init(); // you always need to set this
-
-		haxe.Timer.delay(function() {
-			trace('start forced recording');
-			export.start();
-		}, 500);
-		haxe.Timer.delay(function() {
-			trace('stop forced recording');
-			export.stop();
-		}, 2500);
-
+		// var export = new ExportNodeServer();
+		// export.delayInSeconds(10);
+		// export.recordInSeconds(10);
+		// export.isDebug(false);
+		// export.type(NODE);
+		// // trace(export.settings()); // get the settings
+		// export.init(); // you always need to set this
+		// haxe.Timer.delay(function() {
+		// 	trace('start forced recording');
+		// 	export.start();
+		// }, 500);
+		// haxe.Timer.delay(function() {
+		// 	trace('stop forced recording');
+		// 	export.stop();
+		// }, 2500);
 		// other stuff
-		startTime = haxe.Timer.stamp();
-		dot = createShape(100, {x: w / 2, y: h / 2});
 		// embedding text
-		Text.embedGoogleFont('Oswald:200,300,400,500,600,700', onEmbedHandler);
-		Text.embedGoogleFont('Share+Tech+Mono', onEmbedHandler);
-		// createQuickSettings();
-		onAnimateHandler(dot);
 	}
 
 	function onEmbedHandler(e) {
@@ -100,71 +105,72 @@ class CC100 extends ExportBase // SketchBase
 		if (dot == null)
 			return;
 
-		ctx.clearRect(0, 0, w, h);
-		ctx.backgroundObj(_color0);
+		// reset previous sketch
+		sketch.clear();
 
+		// background color
+		var bg = sketch.makeRectangle(0, 0, w, h, false);
+		bg.id = "bg color";
+		bg.fillColor = getColourObj(_color0);
+
+		// quick generate grid
 		if (isDebug) {
-			ShapeUtil.gridField(ctx, grid);
+			sketcher.debug.Grid.gridDots(sketch, grid);
 		}
 
 		for (i in 0...shapeArray.length) {
 			var sh = shapeArray[i];
 		}
-		// var rgb = randomColourObject();
-		// ctx.strokeColour(rgb.r, rgb.g, rgb.b);
-		// ctx.xcross(w/2, h/2, 200);
 
-		ctx.fillStyle = getColourObj(_color2);
-		Text.create(ctx, 'delay${export._delay}frames/record${export._record}frames')
-			.x(w2)
-			.y(h4 * 1)
-			.centerAlign()
-			.size(60)
-			.font("Share Tech Mono")
-			.draw();
+		var text = sketch.makeText("delay${export._delay}frames/record${export._record}frames", w2, h4 * 1);
+		text.setFill(getColourObj(_color2));
+		text.fontFamily = monoFamily;
+		text.fontSizePx = 60;
+		text.textAlign = TextAlignType.Center;
 
-		ctx.fillStyle = getColourObj(_color4);
-		Text.create(ctx, '${toString()}')
-			.x(w2)
-			.y(h2)
-			.centerAlign()
-			.size(260)
-			.font("'Oswald', sans-serif;")
-			.draw();
+		var text = sketch.makeText('${toString()}', w2, h2);
+		text.setFill(getColourObj(_color4));
+		text.fontFamily = oswaldFamily;
+		text.fontSizePx = 260;
+		text.textAlign = TextAlignType.Center;
 
 		var time = Date.now();
 		var hours = time.getHours(); // 24
 		var min = time.getMinutes(); // 60
 		var sec = time.getSeconds(); // 60
-		// var sec = time.get() + 1; // 60
+		// // var sec = time.get() + 1; // 60
 
-		var text = '${Std.string(hours).lpad('0', 2)}:${Std.string(min).lpad('0', 2)}:${Std.string(sec).lpad('0', 2)}';
+		var str = '${Std.string(hours).lpad('0', 2)}:${Std.string(min).lpad('0', 2)}:${Std.string(sec).lpad('0', 2)}';
+		var text = sketch.makeText(str, w2, h4 * 3);
+		text.setFill(getColourObj(_color3));
+		text.fontFamily = monoFamily;
+		text.fontSizePx = 160;
+		text.textAlign = TextAlignType.Center;
 
-		ctx.fillStyle = getColourObj(_color3);
-		Text.create(ctx, text)
-			.x(w2)
-			.y(h4 * 3)
-			.centerAlign()
-			.size(160)
-			.font("Share Tech Mono")
-			.draw();
+		var text = sketch.makeText('${haxe.Timer.stamp() - startTime}', w4, h - 100);
+		text.setFill(getColourObj(_color2));
+		text.fontFamily = monoFamily;
+		text.fontSizePx = 50;
+		text.textAlign = TextAlignType.Left;
 
-		ctx.fillStyle = getColourObj(_color2);
-		Text.create(ctx, '${haxe.Timer.stamp() - startTime}')
-			.x(w4)
-			.y(h - 100)
-			.leftAlign()
-			.size(50)
-			.font("Share Tech Mono")
-			.draw();
+		var circle = sketch.makeCircle(dot.x, dot.y, 100).setStroke(getColourObj(_color3), 20).noFill();
 
-		ctx.strokeColourRGB(_color3);
-		ctx.strokeWeight(20);
-		ctx.circleStroke(dot.x, dot.y, 100);
+		sketch.update();
 	}
 
 	override function setup() {
 		trace('${toString()} SETUP :: ${toString()}');
+
+		init();
+
+		oswaldFamily = EmbedUtil.embedGoogleFont('Oswald:200,300,400,500,600,700', onEmbedHandler);
+		monoFamily = EmbedUtil.embedGoogleFont('Share+Tech+Mono', onEmbedHandler);
+
+		trace(oswaldFamily, monoFamily);
+
+		startTime = haxe.Timer.stamp();
+		dot = createShape(100, {x: w2, y: h2});
+		onAnimateHandler(dot);
 
 		var colorArray = ColorUtil.niceColor100SortedString[randomInt(ColorUtil.niceColor100SortedString.length - 1)];
 		_color0 = hex2RGB(colorArray[0]);
@@ -172,14 +178,16 @@ class CC100 extends ExportBase // SketchBase
 		_color2 = hex2RGB(colorArray[2]);
 		_color3 = hex2RGB(colorArray[3]);
 		_color4 = hex2RGB(colorArray[4]);
-
 		isDebug = true;
 
+		// grid
+		grid = new GridUtil(w, h);
 		// grid.setDimension(w*2.1, h*2.1);
 		// grid.setNumbered(3,3);
 		grid.setCellSize(_cellsize);
 		grid.setIsCenterPoint(true);
 
+		// set default values
 		shapeArray = [];
 		for (i in 0...grid.array.length) {
 			shapeArray.push(createShape(i, grid.array[i]));
@@ -190,9 +198,5 @@ class CC100 extends ExportBase // SketchBase
 		// trace('DRAW :: ${toString()}');
 		drawShape();
 		// stop();
-	}
-
-	override function toString() {
-		return 'cc100';
 	}
 }
