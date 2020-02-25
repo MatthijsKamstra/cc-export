@@ -5,6 +5,7 @@
 
 # Uncomment (#) more build scripts if you need more
 -cmd echo '\n----- build all (projectname: cc-export) -----'
+
 -cmd echo '> build target javascript (build_client.hxml)'
 -cmd haxe build_client.hxml
 
