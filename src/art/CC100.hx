@@ -1,18 +1,20 @@
 package art;
 
-import export.ExportNodeServer;
-import sketcher.draw.Text.TextAlignType;
-import sketcher.util.EmbedUtil;
-import sketcher.lets.easing.Sine;
-import sketcher.lets.Go;
 import Sketcher.Globals.*;
-import sketcher.AST.Point;
 import sketcher.AST.Circle;
-import sketcher.util.ColorUtil;
+import sketcher.AST.Point;
+import sketcher.draw.Text.TextAlignType;
+import sketcher.lets.Go;
+import sketcher.lets.easing.Sine;
 import sketcher.util.ColorUtil.*;
+import sketcher.util.ColorUtil;
+import sketcher.util.EmbedUtil;
 import sketcher.util.GridUtil;
 import sketcher.util.MathUtil.*;
 import sketcher.util.MathUtil;
+// export
+import export.NodeServer;
+import export.NodeServerSettings;
 
 using StringTools;
 
@@ -41,6 +43,9 @@ class CC100 extends SketcherBase {
 	var dot:Circle;
 	var startTime:Float;
 
+	// export
+	var export:NodeServer;
+
 	public function new() {
 		// setup Sketch
 		var settings:Settings = new Settings(stageW, stageH, 'canvas');
@@ -53,23 +58,17 @@ class CC100 extends SketcherBase {
 	}
 
 	function init() {
-		// var export = new ExportNodeServer();
-		// export.delayInSeconds(10);
-		// export.recordInSeconds(10);
-		// export.isDebug(false);
-		// export.type(NODE);
-		// // trace(export.settings()); // get the settings
-		// export.init(); // you always need to set this
-		// haxe.Timer.delay(function() {
-		// 	trace('start forced recording');
-		// 	export.start();
-		// }, 500);
-		// haxe.Timer.delay(function() {
-		// 	trace('stop forced recording');
-		// 	export.stop();
-		// }, 2500);
-		// other stuff
-		// embedding text
+		var settings = new NodeServerSettings(sketch.canvas.getContext2d(), 'cc100');
+		export = new NodeServer(settings);
+		trace(export.settings); // get the settings
+		haxe.Timer.delay(function() {
+			trace('start forced recording');
+			export.start();
+		}, 500);
+		haxe.Timer.delay(function() {
+			trace('stop forced recording');
+			export.stop();
+		}, 5000);
 	}
 
 	function onEmbedHandler(e) {
@@ -122,7 +121,7 @@ class CC100 extends SketcherBase {
 			var sh = shapeArray[i];
 		}
 
-		var text = sketch.makeText("delay${export._delay}frames/record${export._record}frames", w2, h4 * 1);
+		var text = sketch.makeText('delay ${export.settings.delay} frames/record ${export.settings.record} frames', w2, h4 * 1);
 		text.setFill(getColourObj(_color2));
 		text.fontFamily = monoFamily;
 		text.fontSizePx = 60;
@@ -197,6 +196,7 @@ class CC100 extends SketcherBase {
 	override function draw() {
 		// trace('DRAW :: ${toString()}');
 		drawShape();
+		export.pulse();
 		// stop();
 	}
 }
