@@ -1,7 +1,8 @@
 # libs used in project
 -lib js-kit
 -lib hxnodejs
--lib cc-sketch
+-lib cc-sketch-plus
+-lib cc-export
 -lib hxquicksettings
 # source folder
 -cp src

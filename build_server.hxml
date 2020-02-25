@@ -1,6 +1,7 @@
 -lib js-kit
 -lib hxnodejs
--lib cc-sketch
+-lib cc-sketch-plus
+-lib cc-export
 -cp src
 -main MainServer
 -js bin/server.js
