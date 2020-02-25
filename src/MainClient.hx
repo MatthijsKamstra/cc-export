@@ -12,7 +12,7 @@ class MainClient {
 	var panel1:QuickSettings;
 	var frameCounter = 0;
 	var _isRecording:Bool = false;
-	var isDebug = false;
+	var isDebug = true;
 
 	public function new() {
 		console.log('${toString()} START :: ${App.NAME} :: build: ${App.getBuildDate()} ');
@@ -54,11 +54,17 @@ class MainClient {
 		panel1 = QuickSettings.create(10, 10, "cc-export") // .setGlobalChangeHandler(untyped drawShape)
 
 			.addButton('Send TEST', function(e) sendMessage())
-			.addButton('Send RENDER_FRAME', function(e) renderFrameHandler()).addButton('IMAGE', function(e) renderImage())
-			.addButton('IMAGE - PNG', function(e) renderImage(DataType.PNG)).addButton('IMAGE - JPEG', function(e) renderImage(DataType.JPEG))
-			.addButton('IMAGE _ WEBP', function(e) renderImage(DataType.WEBP)).addBoolean('Recording', false, function(e) toggleRecording(e))
+			.addButton('Send RENDER_FRAME', function(e) renderFrameHandler())
+			.addButton('IMAGE', function(e) renderImage())
+			.addButton('IMAGE - PNG', function(e) renderImage(DataType.PNG))
+			.addButton('IMAGE - JPEG', function(e) renderImage(DataType.JPEG))
+			.addButton('IMAGE _ WEBP', function(e) renderImage(DataType.WEBP))
+			.addBoolean('Recording', false, function(e) toggleRecording(e))
 
-			.addButton('convert', function(e) convertRecording(e)).addButton('markdown', function(e) writeReadme(e)).setKey('h') // use `h` to toggle menu
+			.addButton('convert', function(e) convertRecording(e))
+			.addButton('markdown', function(e) writeReadme(e))
+
+			.setKey('h') // use `h` to toggle menu
 
 			.saveInLocalStorage('store-data-cc-export');
 	}
@@ -115,7 +121,7 @@ class MainClient {
 	// ____________________________________ RENDERS ____________________________________
 
 	function renderSequence(?timestamp:Float) {
-		var canvas:js.html.CanvasElement = cast document.getElementById('creative_code_mck');
+		var canvas:js.html.CanvasElement = cast document.getElementById('sketcher_canvas');
 		var dataString = canvas.toDataURL(); // default png
 		var id = Std.string(Date.now().getTime());
 		var data:export.AST.EXPORT_IMAGE = {
@@ -139,7 +145,8 @@ class MainClient {
 	 * @param type default 'image/png', other options 'image/jpeg' and 'image/webp' (Chrome)
 	 */
 	function renderImage(?type:DataType = DataType.PNG) {
-		var canvas:js.html.CanvasElement = cast document.getElementById('creative_code_mck');
+		var canvas:js.html.CanvasElement = cast document.getElementById('sketcher_canvas');
+		// console.log(canvas);
 		// var dataString = canvas.toDataURL();
 		var dataString = canvas.toDataURL(Std.string(type), 1); // 1 is heighest value, only works with jpg/webp
 
@@ -158,7 +165,7 @@ class MainClient {
 	}
 
 	function renderFrameHandler() {
-		var canvas:js.html.CanvasElement = cast document.getElementById('creative_code_mck');
+		var canvas:js.html.CanvasElement = cast document.getElementById('sketcher_canvas');
 		var dataString = canvas.toDataURL();
 
 		frameCounter++;
