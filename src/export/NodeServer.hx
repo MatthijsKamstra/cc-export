@@ -7,8 +7,8 @@ import export.ExportNames.*;
 using StringTools;
 
 class NodeServer {
-	var _port:String;
-	var _host:String;
+	var _port:String = '5000';
+	var _host:String = 'http://localhost';
 	var _socket:Dynamic;
 
 	// bools
@@ -197,7 +197,7 @@ class NodeServer {
 			return;
 		}
 
-		console.log(_host, _port);
+		console.log('${_host}:${_port}');
 		_socket = untyped io('http://localhost:5000');
 
 		// _socket = untyped io();

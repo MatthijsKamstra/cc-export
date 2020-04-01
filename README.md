@@ -49,6 +49,8 @@ don't forget to add it to your build file
 
 ## use in code
 
+-lib cc-export
+
 ```
 // import
 import export.NodeServer;
